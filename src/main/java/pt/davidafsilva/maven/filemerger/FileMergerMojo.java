@@ -108,7 +108,7 @@ public class FileMergerMojo extends AbstractMojo {
 
     // 1. remove target file if it exists
     if (targetFile.exists()) {
-      if (!targetFile.delete()) {
+      if (targetFile.isDirectory() || !targetFile.delete()) {
         throw new MojoFailureException("Unable to delete target file");
       }
     }
@@ -136,6 +136,10 @@ public class FileMergerMojo extends AbstractMojo {
   private void merge(final Collection<File> files) throws MojoExecutionException {
     FileOutputStream foo = null;
     try {
+      if (!targetFile.getParentFile().mkdirs() || !targetFile.createNewFile()) {
+        throw new MojoExecutionException("Unable to create output file");
+      }
+
       foo = new FileOutputStream(targetFile, true);
       final Writer writer = new BufferedWriter(new OutputStreamWriter(foo));
 
