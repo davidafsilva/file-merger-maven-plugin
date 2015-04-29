@@ -8,14 +8,35 @@
     <artifactId>file-merger-maven-plugin</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
+    <description>A (very) simple maven plugin to (orderly) merge files.</description>
+    <url>https://github.com/davidafsilva/file-merger-maven-plugin</url>
 
     <!-- SCM configuration -->
     <scm>
-        <connection>scm:git:git@github.com:davidafsilva/mmfp.git</connection>
-        <developerConnection>scm:git:git@github.com:davidafsilva/mmfp.git</developerConnection>
-        <url>https://github.com/davidafsilva/mmfp</url>
+        <connection>scm:git:git@github.com:davidafsilva/file-merger-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:davidafsilva/file-merger-maven-plugin.git
+        </developerConnection>
+        <url>https://github.com/davidafsilva/file-merger-maven-plugin</url>
         <tag>HEAD</tag>
     </scm>
+
+    <!-- License information -->
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <!-- Developers information -->
+    <developers>
+        <developer>
+            <name>David Silva</name>
+            <email>david@davidafsilva.pt</email>
+            <organization>davidafsilva</organization>
+            <organizationUrl>https://davidafsilva.pt</organizationUrl>
+        </developer>
+    </developers>
 
     <!-- project properties -->
     <properties>
