@@ -9,27 +9,27 @@ Usage:
 ------
 #### 1. Merge JavaCC files ("modular" definitions)
 ```xml
-            <plugin>
-                <groupId>com.davidafsilva</groupId>
-                <artifactId>file-merger-maven-plugin</artifactId>
-                <version>1.0.0</version>
-                <executions>
-                    <execution>
-                        <id>merge-files</id>
-                        <goals>
-                            <goal>merge-files</goal>
-                        </goals>
-                        <configuration>
-                            <sourceDirectory>${project.basedir}/src/javacc</sourceDirectory>
-                            <includes>
-                                <include>options.jj</include>
-                                <include>parser.jj</include>
-                                <include>types.jj</include>
-                                <include>math.jj</include>
-                            </includes>
-                            <targetFile>${project.build.directory}/generated-sources/javacc/astparser.jj</targetFile>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<plugin>
+    <groupId>com.davidafsilva</groupId>
+    <artifactId>file-merger-maven-plugin</artifactId>
+    <version>1.0.0</version>
+    <executions>
+        <execution>
+            <id>merge-files</id>
+            <goals>
+                <goal>merge-files</goal>
+            </goals>
+            <configuration>
+                <sourceDirectory>${project.basedir}/src/javacc</sourceDirectory>
+                <includes>
+                    <include>options.jj</include>
+                    <include>parser.jj</include>
+                    <include>types.jj</include>
+                    <include>math.jj</include>
+                </includes>
+                <targetFile>${project.build.directory}/generated-sources/javacc/astparser.jj</targetFile>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
 ```
