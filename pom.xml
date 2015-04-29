@@ -23,7 +23,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- compile/runtime dependencies versions -->
-        <maven-plugin-api.version>2.0</maven-plugin-api.version>
+        <maven.version>3.2.5</maven.version>
+        <maven-plugin-api.version>3.3.1</maven-plugin-api.version>
         <maven-plugin-annotations.version>3.4</maven-plugin-annotations.version>
         <commons-io.version>2.4</commons-io.version>
 
@@ -34,6 +35,22 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-core</artifactId>
+            <version>${maven.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-artifact</artifactId>
+            <version>${maven.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-compat</artifactId>
+            <version>${maven.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
@@ -105,13 +122,6 @@
                     <execution>
                         <id>default-descriptor</id>
                         <phase>process-classes</phase>
-                    </execution>
-                    <!-- generate help goal -->
-                    <execution>
-                        <id>generated-helpmojo</id>
-                        <goals>
-                            <goal>helpmojo</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>

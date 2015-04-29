@@ -33,8 +33,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.StringUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -59,29 +57,28 @@ import java.util.LinkedHashSet;
 public class FileMergerMojo extends AbstractMojo {
 
   /**
-   * The source directories
+   * The base directory
    */
-  @Parameter(defaultValue = "src/main/resources")
-  private File[] sourceDirectories;
+  @Parameter(readonly = true, defaultValue = "${project.basedir}")
+  private File baseDirectory;
+
+  /**
+   * The source directory
+   */
+  @Parameter(defaultValue = "${project.basedir}/src/main/resources")
+  private File sourceDirectory;
 
   /**
    * The target file
    */
-  @Parameter(defaultValue = "src/main/resources/merged")
+  @Parameter(defaultValue = "${project.basedir}/src/main/resources/merged")
   private File targetFile;
 
   /**
-   * Either the files to include or some arbitrary include patterns
+   * The files to be include (patterns are not supported)
    */
-  @Parameter(required = true)
-  private File[] includes;
-
-  /**
-   * Either the files to exclude or some arbitrary exclude patterns. Excludes have more precedence
-   * over includes.
-   */
-  @Parameter
-  private File[] excludes;
+  @Parameter(alias = "files", required = true)
+  private String[] includes;
 
   /**
    * The file encoding charset
@@ -91,10 +88,28 @@ public class FileMergerMojo extends AbstractMojo {
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
+    // 0. set defaults...
+    if (sourceDirectory == null) {
+      sourceDirectory = new File(baseDirectory.getAbsolutePath()
+                                 + File.pathSeparator + "src"
+                                 + File.pathSeparator + "main"
+                                 + File.pathSeparator + "resources");
+    }
+    if (targetFile == null) {
+      targetFile = new File(baseDirectory.getAbsolutePath()
+                            + File.pathSeparator + "src"
+                            + File.pathSeparator + "main"
+                            + File.pathSeparator + "resources"
+                            + File.pathSeparator + "merged");
+    }
+    if (encoding == null) {
+      encoding = "UTF-8";
+    }
+
     // 1. remove target file if it exists
     if (targetFile.exists()) {
       if (!targetFile.delete()) {
-        throw new MojoFailureException("unable to delete target file");
+        throw new MojoFailureException("Unable to delete target file");
       }
     }
 
@@ -102,10 +117,14 @@ public class FileMergerMojo extends AbstractMojo {
     final Collection<File> files = getFilesToMerge();
 
     // 3. merge the files
-    merge(files);
+    if (files.isEmpty()) {
+      getLog().warn("No files to be merged were found.");
+    } else {
+      merge(files);
 
-    // 4. over and out
-    getLog().info("successfully merged " + files.size() + " files");
+      // 4. over and out
+      getLog().info("Successfully merged " + files.size() + " files");
+    }
   }
 
   /**
@@ -121,7 +140,7 @@ public class FileMergerMojo extends AbstractMojo {
       final Writer writer = new BufferedWriter(new OutputStreamWriter(foo));
 
       for (final File file : files) {
-        getLog().info("merging file '" + file.getAbsolutePath() + "' into '" +
+        getLog().info("Merging file '" + file.getAbsolutePath() + "' into '" +
                       targetFile.getAbsolutePath() + "'");
 
         FileInputStream fis = null;
@@ -132,15 +151,17 @@ public class FileMergerMojo extends AbstractMojo {
           // copy the contents
           IOUtils.copy(fis, writer, encoding);
         } catch (final IOException e) {
-          throw new MojoExecutionException("unable to merge file '" + file.getAbsolutePath() + "'",
+          throw new MojoExecutionException("Unable to merge file '" + file.getAbsolutePath() + "'",
                                            e);
         } finally {
           // close the stream
           IOUtils.closeQuietly(fis);
         }
       }
+
+      writer.close();
     } catch (final IOException e) {
-      throw new MojoExecutionException("unable to create the output stream", e);
+      throw new MojoExecutionException("Unable to create the output stream", e);
     } finally {
       // close the stream
       IOUtils.closeQuietly(foo);
@@ -157,23 +178,20 @@ public class FileMergerMojo extends AbstractMojo {
   private Collection<File> getFilesToMerge() throws MojoExecutionException {
     final Collection<File> files = new LinkedHashSet<File>();
 
-    // get the include and exclude rules formatted as a string
-    final String includeStr = StringUtils.join(Arrays.asList(includes).iterator(), ",");
-    final String excludesStr = StringUtils.join(Arrays.asList(excludes).iterator(), ",");
-
     // iterate over the source directories
-    for (final File directory : sourceDirectories) {
-      if (!validDirectory(directory)) {
-        getLog().warn("invalid directory specified: " + directory.toString());
-        continue;
-      }
+    if (!validDirectory(sourceDirectory)) {
+      getLog().warn("Invalid source directory specified: " + sourceDirectory.toString());
+      return files;
+    }
 
-      // get the files to be included
-      try {
-        files.addAll(FileUtils.getFiles(directory, includeStr, excludesStr));
-      } catch (final IOException e) {
-        throw new MojoExecutionException(
-            "unable to get files to be merged at " + directory.getAbsolutePath(), e);
+    // get the files to be included
+    final String fs = System.getProperty("file.separator");
+    for (final String f : includes) {
+      final File fp = new File(sourceDirectory.getAbsolutePath() + fs + f);
+      if (!fp.exists() || !fp.canRead() || !fp.isFile()) {
+        getLog().warn("Unable to read file: " + fp.getAbsolutePath());
+      } else {
+        files.add(fp);
       }
     }
 
@@ -193,10 +211,11 @@ public class FileMergerMojo extends AbstractMojo {
   @Override
   public String toString() {
     return "FileMergerMojo{" +
-           "sourceDirectories=" + Arrays.toString(sourceDirectories) +
+           "baseDirectory=" + baseDirectory +
+           ", sourceDirectory=" + sourceDirectory +
            ", targetFile=" + targetFile +
            ", includes=" + Arrays.toString(includes) +
-           ", excludes=" + Arrays.toString(excludes) +
+           ", encoding='" + encoding + '\'' +
            '}';
   }
 }
